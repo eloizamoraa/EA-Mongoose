@@ -1,7 +1,9 @@
+
 import mongoose from 'mongoose';
 import { UserModel, IUser } from './user.js';
 import { OrganizationModel, IOrganization } from './organization.js';
-
+import { ProjectModel } from './project.js';
+import { ProjectService } from './project.service.js';
 async function runDemo() {
   try {
     // --- 1. CONNECTION ---
@@ -13,6 +15,7 @@ async function runDemo() {
     console.log('🧹 Cleaning database...');
     await UserModel.deleteMany({});
     await OrganizationModel.deleteMany({});
+    await ProjectModel.deleteMany({});
 
     // --- 3. SEEDING (The missing part) ---
     console.log('🌱 Seeding data...');
@@ -37,6 +40,15 @@ async function runDemo() {
 
     const users = await UserModel.insertMany(usersData);
     console.log(`✅ Seeded ${usersData.length} users and ${orgs.length} organizations`);
+
+    // --- 3.3 Create Projects linked to Orgs (NEW COLLECTION) ---
+const project = await ProjectService.create({
+  name: 'Payroll Migration',
+  description: 'Move payroll system to new platform',
+  organization: initechId.toString(),
+});
+
+console.log('✅ Created project:', project._id);
 
     // --- 4.1 DEMO: CRUD OPERATIONS ---
     console.log('\n🔧 CRUD DEMO:');
@@ -71,7 +83,26 @@ async function runDemo() {
     
     console.log(billOrg);
     console.log(`Works at: ${orgDetails?.name} (${orgDetails?.country})`);
-    
+    // --- 4.3 DEMO: PROJECT CRUD (Required by exercise) ---
+console.log('\n🧩 PROJECT CRUD (NEW COLLECTION):');
+
+// getById with populate
+const projectPopulated = await ProjectService.getById(project._id!.toString());
+console.log('GET BY ID populated:', projectPopulated);
+
+// update
+const updated = await ProjectService.update(project._id!.toString(), {
+  description: 'Move payroll system to cloud',
+});
+console.log('UPDATED:', updated);
+
+// listAll with lean
+const allProjects = await ProjectService.listAll();
+console.log('LIST ALL (lean):', allProjects);
+
+// delete
+const deleted = await ProjectService.delete(project._id!.toString());
+console.log('DELETED:', deleted?._id);
     // --- 5. DEMO: AGGREGATION PIPELINE ---
     console.log('\n📊 TESTING AGGREGATION:');
     
