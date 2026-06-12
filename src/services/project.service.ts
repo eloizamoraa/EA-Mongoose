@@ -1,13 +1,16 @@
-import { Types } from 'mongoose';
-import { ProjectModel, type IProject } from './project.js';
+import { Types, type HydratedDocument, type LeanDocument } from 'mongoose';
+import { ProjectModel, type IProject } from '../project.js';
 
 export type CreateProjectDTO = {
   name: string;
   description?: string;
-  organization: string; // id en string
+  organization: string;
 };
 
 export type UpdateProjectDTO = Partial<CreateProjectDTO>;
+
+type ProjectDocument = HydratedDocument<IProject>;
+type ProjectLeanDocument = LeanDocument<IProject>;
 
 function toObjectId(id: string, field = 'id'): Types.ObjectId {
   if (!Types.ObjectId.isValid(id)) throw new Error(`Invalid ${field}`);
@@ -15,8 +18,7 @@ function toObjectId(id: string, field = 'id'): Types.ObjectId {
 }
 
 export const ProjectService = {
-  // create: Guarda
-  async create(data: CreateProjectDTO) {
+  async create(data: CreateProjectDTO): Promise<ProjectDocument> {
     return ProjectModel.create({
       name: data.name,
       description: data.description,
@@ -24,14 +26,12 @@ export const ProjectService = {
     });
   },
 
-  // getById(id): Retorna amb el seu populate de la col·lecció enllaçada
-  async getById(id: string) {
+  async getById(id: string): Promise<ProjectDocument | null> {
     const _id = toObjectId(id);
     return ProjectModel.findById(_id).populate('organization').exec();
   },
 
-  // update(id, data): Modifica les dades
-  async update(id: string, data: UpdateProjectDTO) {
+  async update(id: string, data: UpdateProjectDTO): Promise<ProjectDocument | null> {
     const _id = toObjectId(id);
 
     const update: Partial<IProject> = {};
@@ -49,14 +49,12 @@ export const ProjectService = {
       .exec();
   },
 
-  // delete(id): Elimina
-  async delete(id: string) {
+  async delete(id: string): Promise<ProjectDocument | null> {
     const _id = toObjectId(id);
     return ProjectModel.findByIdAndDelete(_id).exec();
   },
 
-  // listAll(): Llista tots els documents usant .lean()
-  async listAll() {
-    return ProjectModel.find().lean().exec(); // ✅ requisito
+  async listAll(): Promise<ProjectLeanDocument[]> {
+    return ProjectModel.find().lean().exec();
   },
 };

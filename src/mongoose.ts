@@ -3,8 +3,9 @@ import mongoose from 'mongoose';
 import { UserModel, IUser } from './user.js';
 import { OrganizationModel, IOrganization } from './organization.js';
 import { ProjectModel } from './project.js';
-import { ProjectService } from './project.service.js';
-async function runDemo() {
+import { ProjectService } from './services/project.service.js';
+
+async function runDemo(): Promise<void> {
   try {
     // --- 1. CONNECTION ---
     await mongoose.connect('mongodb://127.0.0.1:27017/ea_mongoose');
